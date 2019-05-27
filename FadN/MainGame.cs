@@ -1,18 +1,29 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using FadN.States;
 
 namespace FadN
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class MainGame : Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
 
-        public Game1()
+        private State _currentState;
+        private State _nextState;
+
+        public float ScalingFactor { get; set; }
+
+        public void ChangeState(State state)
+        {
+            _nextState = state;
+        }
+
+        public MainGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -31,8 +42,7 @@ namespace FadN
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
+            ScalingFactor = 1f;
             base.Initialize();
         }
 
@@ -45,7 +55,7 @@ namespace FadN
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            _currentState = new StartState(this, graphics.GraphicsDevice, Content, ScalingFactor);
         }
 
         /// <summary>
@@ -67,7 +77,14 @@ namespace FadN
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 Exit();
 
-            // TODO: Add your update logic here
+            if (_nextState != null)
+            {
+                _currentState = _nextState;
+
+                _nextState = null;
+            }
+
+            _currentState.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -78,10 +95,8 @@ namespace FadN
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // TODO: Add your drawing code here
-
+            GraphicsDevice.Clear(Color.Black);
+            _currentState.Draw(gameTime, spriteBatch);
             base.Draw(gameTime);
         }
     }
